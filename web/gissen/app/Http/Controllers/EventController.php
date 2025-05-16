@@ -31,4 +31,41 @@ final class EventController extends Controller
 
         return redirect()->route('index')->with('success', 'Event created successfully!');
     }
+
+    public function ical() {
+        $events = Event::all();
+
+        $lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'CALSCALE:GREGORIAN',
+            'PRODID:-//Gissen//NL',
+        ];
+
+        foreach ($events as $event) {
+            $date = Carbon::parse($event->start)->format('Ymd');
+
+            $lines[] = 'BEGIN:VEVENT';
+            $lines[] = 'UID:event' . $event->id . '@gissen.nl';
+            $lines[] = 'DTSTAMP:' . now()->format('Ymd\THis\Z');
+            $lines[] = 'DTSTART;VALUE=DATE:' . $date;
+            $lines[] = 'DTEND;VALUE=DATE:' . Carbon::parse($event->start)->addDay()->format('Ymd');
+            $lines[] = 'SUMMARY:' . $this->escapeString($event->title);
+            $lines[] = 'LOCATION:' . $this->escapeString($event->location);
+            $lines[] = 'END:VEVENT';
+        }
+
+        $lines[] = 'END:VCALENDAR';
+
+        $calendarContent = implode("\r\n", $lines);
+
+        return response($calendarContent, 200)
+            ->header('Content-Type', 'text/calendar')
+            ->header('Content-Disposition', 'attachment; filename="ical.ics"');
+    }
+
+    private function escapeString($string)
+    {
+        return addcslashes($string, ",;\\");
+    }
 }
