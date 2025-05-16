@@ -33,7 +33,8 @@ final class EventController extends Controller
     }
 
     public function ical() {
-        $events = Event::all();
+        $yesterday = new Carbon('yesterday');
+        $events = Event::query()->where('start', '>=', $yesterday)->oldest('start')->get();
 
         $lines = [
             'BEGIN:VCALENDAR',
