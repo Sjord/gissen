@@ -13,4 +13,22 @@ final class EventController extends Controller
         $events = Event::query()->where('start', '>=', $yesterday)->oldest('start')->get();
         return view('events', ['events' => $events]);
     }
+
+    public function create()
+    {
+        return view('create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'start' => 'required|date',
+            'location' => 'required|string|max:255',
+        ]);
+
+        Event::create($validated);
+
+        return redirect()->route('index')->with('success', 'Event created successfully!');
+    }
 }
