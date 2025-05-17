@@ -19,18 +19,35 @@ final class EventController extends Controller
         return view('create');
     }
 
-    public function store(Request $request)
+    /**
+     * Store a newly created event or update an existing one.
+     */
+    public function save(Request $request, Event $event = null)
     {
-        $validated = $request->validate([
+        $validatedData = $request->validate([
             'title' => 'required|string|max:255',
             'start' => 'required|date',
             'location' => 'required|string|max:255',
-            'website_url' => 'url',
+            'website_url' => 'url|max:2048', // Allow empty and validate if present
         ]);
 
-        Event::create($validated);
+        if ($event) {
+            // We are updating an existing event
+            $event->update($validatedData);
+            $message = 'Event updated successfully!';
+        } else {
+            // We are creating a new event
+            Event::create($validatedData);
+            $message = 'Event created successfully!';
+        }
 
-        return redirect()->route('index')->with('success', 'Event created successfully!');
+        return redirect()->route('index')->with('success', $message);
+    }
+
+    public function edit(Event $event)
+    {
+        // The $event model is automatically injected by Laravel's route model binding
+        return view('create', ['event' => $event]); // Reuse the create view, passing the event
     }
 
     public function ical() {

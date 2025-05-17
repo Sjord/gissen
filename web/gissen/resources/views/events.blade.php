@@ -10,6 +10,9 @@
                 <th>datum</th>
                 <th>naam</th>
                 <th>locatie</th>
+                @auth
+                    <th>acties</th>
+                @endauth
             </tr>
             @foreach ($events as $event)
                 <tr>
@@ -20,6 +23,11 @@
                         <td>{{ $event->title }}</td>
                     @endif
                     <td>{{ $event->location }}</td>
+                        @auth
+                        <td>
+                            <a href="{{ route('events.edit', $event) }}">&#9998;</a>
+                        </td>
+                    @endauth
                 </tr>
             @endforeach
         </table>
