@@ -25,6 +25,7 @@ final class EventController extends Controller
             'title' => 'required|string|max:255',
             'start' => 'required|date',
             'location' => 'required|string|max:255',
+            'website_url' => 'url',
         ]);
 
         Event::create($validated);

@@ -14,7 +14,11 @@
             @foreach ($events as $event)
                 <tr>
                     <td>{{ $event->start }}</td>
-                    <td>{{ $event->title }}</td>
+                    @if ($event->website_url)
+                        <td><a href="{{ $event->website_url }}">{{ $event->title }}</a></td>
+                    @else
+                        <td>{{ $event->title }}</td>
+                    @endif
                     <td>{{ $event->location }}</td>
                 </tr>
             @endforeach

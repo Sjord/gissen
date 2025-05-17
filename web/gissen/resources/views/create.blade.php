@@ -32,6 +32,11 @@
             <input type="text" name="location" class="form-control" required>
         </div>
 
+        <div>
+            <label for="website_url">Website URL (optional)</label>
+            <input type="url" name="website_url" id="website_url" value="{{ old('website_url') }}" placeholder="https://example.com">
+        </div>
+
         <button type="submit" class="btn btn-primary">Create Event</button>
     </form>
 </div>
