@@ -58,13 +58,17 @@ class ExtractEvents extends Command
 
     private function cleanHtml($text)
     {
-        $removeWithContent = ['script', 'style', 'header', 'footer'];
+        $removeWithContent = ['script', 'style', 'footer', 'nav'];
         foreach ($removeWithContent as $tag) {
             $text = preg_replace('/<' . $tag . '\b[^>]*>(.*?)<\/' . $tag . '>/is', "", $text);
         }
         $text = preg_replace('/<(br|p)\W*>/is', "\n", $text);
-        $text = strip_tags($text);
+        $text = preg_replace('~</td>~is', " ", $text);
         $text = html_entity_decode($text);
+        $text = preg_replace('/<[^>]+>/', ' ', $text);
+        $text = preg_replace('/\h*(\r?\n)\h*/u', "\n", $text);
+        $text = preg_replace('/(\r?\n){2,}/', "\n", $text);
+        $text = preg_replace('/\h+/u', ' ', $text);
         return trim($text);
     }
 
@@ -74,7 +78,7 @@ class ExtractEvents extends Command
         $truncatedText = substr($text, 0, 8000);
 
         $date = date("l Y-m-d");
-        $prompt = "Extract events from the text below. Only include one-time or yearly events that last hours to days. Exclude exhibitions that last several months.
+        $prompt = "Extract events from the text below. Only include future one-time or yearly events that last hours to days. Exclude exhibitions that last several months.
 
 Often, the date for an event is ambiguous because it is missing the year. Part of your job is to determine whether the described event has already been, or is upcoming, given an incomplete date. The current date is $date.
 
