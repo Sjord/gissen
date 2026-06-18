@@ -71,7 +71,14 @@ class ExtractEvents extends Command
     private function askLlama($text)
     {
         // Truncate text if it's too long for your model's context
-        $truncatedText = substr($text, 0, 8000); 
+        $truncatedText = substr($text, 0, 8000);
+
+        $date = date("l Y-m-d");
+        $prompt = "Extract events from the text below. Only include one-time or yearly events that last hours to days. Exclude exhibitions that last several months.
+
+Often, the date for an event is ambiguous because it is missing the year. Part of your job is to determine whether the described event has already been, or is upcoming, given an incomplete date. The current date is $date.
+
+Extract events from this text:\n\n" . $truncatedText;
 
         $response = Http::timeout(120)->post('http://localhost:8080/v1/chat/completions', [
             'model' => 'local-model', // llama.cpp accepts any string here
@@ -82,7 +89,7 @@ class ExtractEvents extends Command
                 ],
                 [
                     'role' => 'user',
-                    'content' => "Extract events from this text:\n\n" . $truncatedText
+                    'content' => $prompt,
                 ]
             ],
             // This forces llama.cpp to output precisely the JSON structure we want
