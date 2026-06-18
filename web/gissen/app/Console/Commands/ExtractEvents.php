@@ -98,6 +98,7 @@ class ExtractEvents extends Command
                             'properties' => [
                               'title' => ['type' => 'string'],
                               'start' => ['type' => 'string'],
+                              'end' => ['type' => 'string', 'nullable' => true],
                               'location' => ['type' => 'string']
                             ],
                             'required' => ['title', 'start', 'location']
@@ -120,22 +121,26 @@ class ExtractEvents extends Command
     private function insertEventIfUnique($eventData)
     {
         try {
-            $startTime = Carbon::parse($eventData['start'])->format('Y-m-y H:i:s');
+            $startTime = Carbon::parse($eventData['start'])->format('Y-m-d H:i:s');
+            // Parse end time if it exists, otherwise keep it null
+            $endTime = !empty($eventData['end']) ? Carbon::parse($eventData['end'])->format('Y-m-d H:i:s') : null;
         } catch (\Exception $e) {
             $this->error("Invalid date format returned: " . $eventData['start']);
             return;
         }
 
-        // De-duplication Logic: Check if an event at the same location and time already exists
+        // Improved De-duplication: Title + Location + Start Time match
         $exists = DB::table('events')
-            ->where('start', $startTime)
+            ->where('title', trim($eventData['title']))
             ->where('location', 'LIKE', '%' . trim($eventData['location']) . '%')
+            ->where('start', $startTime)
             ->exists();
 
         if (!$exists) {
             DB::table('events')->insert([
                 'title' => $eventData['title'],
                 'start' => $startTime,
+                'end' => $endTime,
                 'location' => $eventData['location'],
                 'created_at' => now(),
                 'updated_at' => now(),
