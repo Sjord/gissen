@@ -40,7 +40,7 @@ class ExtractEvents extends Command
             }
 
             // 2. Call llama.cpp with Grammars/JSON Schema
-            $extractedData = $this->askLlama($cleanText);
+            $extractedData = $this->askLlama($url, $cleanText);
 
             if (empty($extractedData['events'])) {
                 $this->warn("No events found on page.");
@@ -49,6 +49,7 @@ class ExtractEvents extends Command
 
             // 3. Process and De-duplicate
             foreach ($extractedData['events'] as $eventData) {
+                $eventData['source_url'] = $url;
                 $this->insertEventIfUnique($eventData);
             }
         }
@@ -72,15 +73,17 @@ class ExtractEvents extends Command
         return trim($text);
     }
 
-    private function askLlama($text)
+    private function askLlama($url, $text)
     {
         // Truncate text if it's too long for your model's context
         $truncatedText = substr($text, 0, 8000);
 
         $date = date("l Y-m-d");
-        $prompt = "Extract events from the text below. Only include future one-time or yearly events that last hours to days. Exclude exhibitions that last several months.
+        $prompt = "Below is text from $url about events in or around Haarlem. Extract event information from this text. Only include future one-time or yearly events that last hours to days. Exclude exhibitions that last several months.
 
 Often, the date for an event is ambiguous because it is missing the year. Part of your job is to determine whether the described event has already been, or is upcoming, given an incomplete date. The current date is $date.
+
+For each event, return title, start date, end date, location, description, website_url, and metadata. The `metadata` field can contain internal notes, for example about the certainty of the date or location.
 
 Extract events from this text:\n\n" . $truncatedText;
 
@@ -110,7 +113,10 @@ Extract events from this text:\n\n" . $truncatedText;
                               'title' => ['type' => 'string'],
                               'start' => ['type' => 'string'],
                               'end' => ['type' => 'string', 'nullable' => true],
-                              'location' => ['type' => 'string']
+                              'location' => ['type' => 'string'],
+                              'description' => ['type' => 'string', 'nullable' => true],
+                              'website_url' => ['type' => 'string', 'nullable' => true],
+                              'metadata' => ['type' => 'string', 'nullable' => true],
                             ],
                             'required' => ['title', 'start', 'location']
                           ]
