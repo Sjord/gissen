@@ -10,7 +10,7 @@ final class EventController extends Controller
 {
     public function index() {
         $yesterday = new Carbon('yesterday');
-        $events = Event::query()->where('start', '>=', $yesterday)->oldest('start')->get();
+        $events = Event::query()->where('start', '>=', $yesterday)->where('is_staged', false)->oldest('start')->get();
         return view('events', ['events' => $events]);
     }
 

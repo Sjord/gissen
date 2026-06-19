@@ -146,25 +146,19 @@ Extract events from this text:\n\n" . $truncatedText;
             return;
         }
 
-        // Improved De-duplication: Title + Location + Start Time match
-        $exists = DB::table('events')
-            ->where('title', trim($eventData['title']))
-            ->where('location', 'LIKE', '%' . trim($eventData['location']) . '%')
-            ->where('start', $startTime)
-            ->exists();
+        DB::table('events')->insert([
+            'title' => $eventData['title'],
+            'start' => $startTime,
+            'end' => $endTime,
+            'location' => $eventData['location'],
+            'description' => $eventData['description'],
+            'website_url' => $eventData['website_url'],
+            'metadata' => $eventData['metadata'],
+            'created_at' => now(),
+            'updated_at' => now(),
+            'is_staged' => true,
+        ]);
 
-        if (!$exists) {
-            DB::table('events')->insert([
-                'title' => $eventData['title'],
-                'start' => $startTime,
-                'end' => $endTime,
-                'location' => $eventData['location'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-            $this->info("Added event: " . $eventData['title']);
-        } else {
-            $this->comment("Duplicate skipped: " . $eventData['title']);
-        }
+        $this->info("Added event: " . $eventData['title']);
     }
 }
