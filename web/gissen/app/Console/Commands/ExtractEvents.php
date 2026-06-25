@@ -69,7 +69,10 @@ class ExtractEvents extends Command
         $text = preg_replace('/<[^>]+>/', ' ', $text);
         $text = preg_replace('/\h*(\r?\n)\h*/u', "\n", $text);
         $text = preg_replace('/(\r?\n){2,}/', "\n", $text);
+        $text = preg_replace('/\xe2\x80\x8c/', '', $text); // ZERO WIDTH NON-JOINER
+        $text = preg_replace('/([\x80-\xff]+[\x00-\xff]\s+)+/', ' ', $text); // multi-byte unicode followed by spaces, repeated
         $text = preg_replace('/\h+/u', ' ', $text);
+        $text = substr($text, 0, 10000);
         return trim($text);
     }
 
